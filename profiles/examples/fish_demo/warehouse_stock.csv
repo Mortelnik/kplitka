@@ -1,0 +1,4 @@
+﻿line_id,product_id,stock_tons,batch,actual_date,status,is_fictional,source_ref
+ST-001,FISH-011,60,партия 2025-Б,2026-10-01,active,да,stock_main_v1
+ST-002,FISH-007,340,партия 2025-А,2026-10-01,active,да,stock_main_v1
+ST-003,FISH-005,400,партия 2025-В,2026-10-01,active,да,stock_main_v1

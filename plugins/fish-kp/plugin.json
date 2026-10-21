@@ -1,0 +1,6 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "fish-kp",
+  "version": "0.2.0",
+  "description": "Учебный плагин подготовки КП на рыбную продукцию. Проверка локального исполнения Python и выдачи DOCX; бизнес-расчёт в разработке."
+}

@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+dist/
+.DS_Store
+.env
+out/
+.env.*
+!.env.example
+requests/final/
+private_data/
+.ruff_cache/

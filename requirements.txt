@@ -1,0 +1,5 @@
+# Фиксировать версиями из pip freeze окружения проекта (Р5.3)
+pydantic>=2
+python-docx>=1.1
+docxtpl>=0.16
+jsonschema>=4

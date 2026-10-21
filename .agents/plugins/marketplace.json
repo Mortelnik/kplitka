@@ -1,0 +1,20 @@
+{
+  "name": "kalitka-kp-dev",
+  "interface": {
+    "displayName": "Kalitka KP: учебные плагины"
+  },
+  "plugins": [
+    {
+      "name": "fish-kp",
+      "source": {
+        "source": "local",
+        "path": "./plugins/fish-kp"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

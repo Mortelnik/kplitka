@@ -1,0 +1,2 @@
+﻿line_id,product_id,stock_tons,batch,actual_date,status,is_fictional,source_ref
+ST-001,ID-001,,,draft,,,stock_main_v1

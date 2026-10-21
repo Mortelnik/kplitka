@@ -1,0 +1,7 @@
+{
+  "mode": "technical-smoke-only",
+  "quantity_tons": "20",
+  "unit_price": "100000.00",
+  "tax_rate": "0.10",
+  "currency": "RUB"
+}

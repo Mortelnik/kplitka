@@ -1,0 +1,10 @@
+{
+  "repository": "Mortelnik/kplitka",
+  "commit": "47cb8314048da277ec4f85f969a01600a7b2965e",
+  "path": "src/kp_plugin/engine/calculation.py",
+  "url": "https://github.com/Mortelnik/kplitka/blob/47cb8314048da277ec4f85f969a01600a7b2965e/src/kp_plugin/engine/calculation.py",
+  "git_blob_sha1": "b36145c8b79f6377bde9f3067c7feb02471719f3",
+  "sha256": "56eaa710080d061dba7ce395297db45031736618ad76016854de5a48be56643e",
+  "encoding": "utf-8",
+  "retrieval": "Read-only GitHub fetch_file at pinned commit and fetch_blob; UTF-8 bytes verified against Git blob identity. No edits or newline normalization remain in saved copy."
+}

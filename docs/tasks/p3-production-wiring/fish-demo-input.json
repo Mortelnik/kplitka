@@ -1,0 +1,8 @@
+{
+  "profile_dir": "../../../profiles/examples/fish_demo",
+  "raw_text": "Нужна Горбуша с/м НРГ 1.5-2.5 кг, 20 т",
+  "needs": {
+    "items": [{"product_name": "Горбуша с/м НРГ 1.5-2.5 кг", "quantity": "20", "unit": "т"}]
+  },
+  "as_of": "2026-11-09"
+}

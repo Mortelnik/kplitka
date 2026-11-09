@@ -1,0 +1,26 @@
+﻿line_id,product_id,batch,actual_date,status,is_fictional,source_ref,available_qty
+ST-004,FISH-001,учебная партия 2026-01,2026-10-01,active,да,stock_synthetic_extension_v1,185
+ST-005,FISH-002,учебная партия 2026-02,2026-10-01,active,да,stock_synthetic_extension_v1,140
+ST-006,FISH-003,учебная партия 2026-03,2026-10-01,active,да,stock_synthetic_extension_v1,210
+ST-007,FISH-004,учебная партия 2026-04,2026-10-01,active,да,stock_synthetic_extension_v1,115
+ST-003,FISH-005,партия 2025-В,2026-10-01,active,да,stock_main_v1,400
+ST-008,FISH-006,учебная партия 2026-06,2026-10-01,active,да,stock_synthetic_extension_v1,260
+ST-002,FISH-007,партия 2025-А,2026-10-01,active,да,stock_main_v1,340
+ST-009,FISH-008,учебная партия 2026-08,2026-10-01,active,да,stock_synthetic_extension_v1,220
+ST-010,FISH-009,учебная партия 2026-09,2026-10-01,active,да,stock_synthetic_extension_v1,145
+ST-011,FISH-010,учебная партия 2026-10,2026-10-01,active,да,stock_synthetic_extension_v1,125
+ST-001,FISH-011,партия 2025-Б,2026-10-01,active,да,stock_main_v1,60
+ST-012,FISH-012,учебная партия 2026-12,2026-10-01,active,да,stock_synthetic_extension_v1,75
+ST-013,FISH-013,учебная партия 2026-13,2026-10-01,active,да,stock_synthetic_extension_v1,160
+ST-014,FISH-014,учебная партия 2026-14,2026-10-01,active,да,stock_synthetic_extension_v1,85
+ST-015,FISH-015,учебная партия 2026-15,2026-10-01,active,да,stock_synthetic_extension_v1,190
+ST-016,FISH-016,учебная партия 2026-16,2026-10-01,active,да,stock_synthetic_extension_v1,110
+ST-017,FISH-017,учебная партия 2026-17,2026-10-01,active,да,stock_synthetic_extension_v1,48
+ST-018,FISH-018,учебная партия 2026-18,2026-10-01,active,да,stock_synthetic_extension_v1,135
+ST-019,FISH-019,учебная партия 2026-19,2026-10-01,active,да,stock_synthetic_extension_v1,14
+ST-020,FISH-020,учебная партия 2026-20,2026-10-01,active,да,stock_synthetic_extension_v1,90
+ST-021,FISH-021,учебная партия 2026-21,2026-10-01,active,да,stock_synthetic_extension_v1,28
+ST-022,FISH-022,учебная партия 2026-22,2026-10-01,active,да,stock_synthetic_extension_v1,72
+ST-023,FISH-023,учебная партия 2026-23,2026-10-01,active,да,stock_synthetic_extension_v1,54
+ST-024,FISH-024,учебная партия 2026-24,2026-10-01,active,да,stock_synthetic_extension_v1,36
+ST-025,FISH-025,учебная партия 2026-25,2026-10-01,active,да,stock_synthetic_extension_v1,24

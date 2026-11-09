@@ -1,0 +1,21 @@
+﻿customer_id,company_name,inn,cooperation_start_date,customer_type,region,contact_person,email,customer_status,record_status
+CUST-001,ООО «Тихоокеанский опт»,TEST-INN-0001,2026-10-26,Новый,Приморский край,Тестовый контакт 01,customer01@example.invalid,active,EXISTING
+CUST-002,ООО «Морской торговый дом»,TEST-INN-0002,2026-08-15,Новый,Хабаровский край,Тестовый контакт 02,customer02@example.invalid,active,EXISTING
+CUST-003,ООО «Восточный холод»,TEST-INN-0003,2026-02-01,Новый,Сахалинская область,Тестовый контакт 03,customer03@example.invalid,active,EXISTING
+CUST-004,ООО «Рыбный терминал»,TEST-INN-0004,2025-10-27,Новый,Камчатский край,Тестовый контакт 04,customer04@example.invalid,active,EXISTING
+CUST-005,ООО «Береговая логистика»,TEST-INN-0005,2026-06-10,Новый,Амурская область,Тестовый контакт 05,customer05@example.invalid,active,EXISTING
+CUST-006,ООО «Приморский продукт»,TEST-INN-0006,2025-10-26,Постоянный,Москва,Тестовый контакт 06,customer06@example.invalid,active,EXISTING
+CUST-007,ООО «Северный оптовик»,TEST-INN-0007,2025-01-15,Постоянный,Санкт-Петербург,Тестовый контакт 07,customer07@example.invalid,active,EXISTING
+CUST-008,ООО «Океанские поставки»,TEST-INN-0008,2024-10-27,Постоянный,Новосибирская область,Тестовый контакт 08,customer08@example.invalid,active,EXISTING
+CUST-009,ООО «Рыбный резерв»,TEST-INN-0009,2024-05-20,Постоянный,Иркутская область,Тестовый контакт 09,customer09@example.invalid,active,EXISTING
+CUST-010,ООО «Дальневосточный партнёр»,TEST-INN-0010,2024-01-01,Постоянный,Красноярский край,Тестовый контакт 10,customer10@example.invalid,active,EXISTING
+CUST-011,ООО «Бухта опт»,TEST-INN-0011,2023-10-26,Постоянный,Приморский край,Тестовый контакт 11,customer11@example.invalid,active,EXISTING
+CUST-012,ООО «Ледяной склад»,TEST-INN-0012,2023-06-01,Постоянный,Хабаровский край,Тестовый контакт 12,customer12@example.invalid,active,EXISTING
+CUST-013,ООО «Рыбный маршрут»,TEST-INN-0013,2022-10-27,Постоянный,Сахалинская область,Тестовый контакт 13,customer13@example.invalid,active,EXISTING
+CUST-014,ООО «Морские ресурсы»,TEST-INN-0014,2022-03-14,Постоянный,Камчатский край,Тестовый контакт 14,customer14@example.invalid,active,EXISTING
+CUST-015,ООО «Полярный торговый дом»,TEST-INN-0015,2021-10-27,Постоянный,Амурская область,Тестовый контакт 15,customer15@example.invalid,active,EXISTING
+CUST-016,ООО «Океан Трейд»,TEST-INN-0016,2021-10-26,Постоянный,Москва,Тестовый контакт 16,customer16@example.invalid,active,EXISTING
+CUST-017,ООО «Дальний берег»,TEST-INN-0017,2020-07-01,Постоянный,Санкт-Петербург,Тестовый контакт 17,customer17@example.invalid,active,EXISTING
+CUST-018,ООО «Рыбная база Восток»,TEST-INN-0018,2019-04-20,Постоянный,Новосибирская область,Тестовый контакт 18,customer18@example.invalid,active,EXISTING
+CUST-019,ООО «Северный улов»,TEST-INN-0019,2018-12-12,Постоянный,Иркутская область,Тестовый контакт 19,customer19@example.invalid,active,EXISTING
+CUST-020,ООО «Приморская дистрибуция»,TEST-INN-0020,2016-05-05,Постоянный,Красноярский край,Тестовый контакт 20,customer20@example.invalid,active,EXISTING

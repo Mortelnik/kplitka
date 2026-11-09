@@ -1,0 +1,101 @@
+{
+  "version": "v7_team_confirmed",
+  "status": "BUSINESS_RULES_CONFIRMED",
+  "synthetic": true,
+  "customer_identification": {
+    "required_fields": [
+      "company_name",
+      "inn"
+    ],
+    "existing_customer": "lookup by INN; use existing record; no duplicate insert",
+    "new_customer": "if INN not found, create PROSPECT record with company_name and inn; loyalty 0%; no cooperation_start_date",
+    "missing_identity": "ask for company_name and INN; no automatic registration",
+    "registration_side_effect": "test expected action only; never modify real DB",
+    "new_customer_required_fields": [
+      "company_name",
+      "inn"
+    ],
+    "prospect_status": "Проспект",
+    "prospect_cooperation_start_date": null,
+    "conversion_to_active": "OUT_OF_SCOPE: only after successful deal"
+  },
+  "quantity_validation": {
+    "min_qty": "catalog_v6.csv",
+    "available_qty": "warehouse_v6.csv",
+    "max_qty": null
+  },
+  "discounts": {
+    "active": [
+      "LOYALTY",
+      "VOLUME"
+    ],
+    "seasonal_preorder_discount": "REMOVED",
+    "stacking": "sum then cap per product category",
+    "loyalty_tiers": [
+      {
+        "min_years": 0,
+        "pct": 0
+      },
+      {
+        "min_years": 1,
+        "pct": 2
+      },
+      {
+        "min_years": 3,
+        "pct": 3
+      },
+      {
+        "min_years": 5,
+        "pct": 5
+      }
+    ],
+    "volume_tiers": [
+      {
+        "min_tons": 0,
+        "pct": 0
+      },
+      {
+        "min_tons": 5,
+        "pct": 2
+      },
+      {
+        "min_tons": 20,
+        "pct": 3
+      },
+      {
+        "min_tons": 50,
+        "pct": 5
+      },
+      {
+        "min_tons": 100,
+        "pct": 7
+      }
+    ],
+    "volume_basis": "total order tonnes",
+    "caps_pct": {
+      "Обычная рыба": 12,
+      "Лососёвые": 10,
+      "Деликатесы": 8
+    },
+    "discount_base": "line amount before VAT"
+  },
+  "logistics": {
+    "container_capacity_tons": 20,
+    "container_all_products": true,
+    "fill_threshold_pct": 80,
+    "surcharge_per_underfilled_container_rub": 50000,
+    "container_count": "ceil(total_order_tons/20)",
+    "underfilled_definition": "last partial container with 0 < remainder < 16 tonnes; exact 16 tonnes is 80% and incurs no surcharge",
+    "fee_application": "grand_total = sum(goods prices excl VAT minus category-capped discounts plus goods VAT) + 50000 RUB VAT-inclusive per underfilled container",
+    "fee_VAT": "INCLUDED_IN_50000_RUB; add VAT-inclusive delivery fee after goods VAT; do not charge VAT again",
+    "no_manager_approval_trigger": "underfill creates surcharge, not automatic manager approval"
+  },
+  "money": {
+    "rounding": "ROUND_HALF_UP",
+    "decimal_places": 2,
+    "VAT_rate": "read from prices_v6.csv; assumed VAT excluded in unit price"
+  },
+  "open_questions": [
+    "Confirm technical DB interface and how R2 returns newly created prospect ID"
+  ]
+}

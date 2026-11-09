@@ -6,6 +6,7 @@ import json
 import os
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from pathlib import Path
 
@@ -254,3 +255,119 @@ def test_skill_unknown_clarification_question_is_error_and_preserves_results(pay
     assert "pending clarification: unknown_question/1" in error["error"]
     assert "document_path" not in error and "calculation" not in error
     assert file_snapshot(output) == before
+
+
+def assert_complete_runs(output, expected_count):
+    assert not list(output.glob(".pending-*"))
+    directories = list(output.glob("run-*"))
+    assert len(directories) == expected_count
+    for folder in directories:
+        assert {p.name for p in folder.iterdir()} == {"offer.docx", "offer.json"}
+        summary = json.loads((folder / "offer.json").read_text(encoding="utf-8"))
+        assert Path(summary["document_path"]) == folder / "offer.docx"
+        assert Path(summary["summary_path"]) == folder / "offer.json"
+        assert Path(summary["document_path"]).is_absolute()
+        assert summary["gate_status"] == "INTERNAL_DRAFT" and summary["client_offer"] is False
+        assert "INTERNAL_DRAFT" in "\n".join(p.text for p in Document(folder / "offer.docx").paragraphs)
+
+
+@pytest.mark.parametrize("failure", ["json_open", "json_write", "verify", "rename"])
+def test_failed_publication_cleans_only_current_staging(payload, tmp_path, monkeypatch, capsys, failure):
+    source = tmp_path / "input.json"
+    source.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    output = tmp_path / "output"
+    previous = invoke(source, output, tmp_path)
+    assert previous.returncode == 0, previous.stderr
+    # A pre-existing JSON without a DOCX must also remain untouched.
+    (output / "offer.json").write_text('{"previous": true}', encoding="utf-8")
+    before = file_snapshot(output)
+    observed = []
+    original_open, original_rename = Path.open, Path.rename
+
+    def check_docx(staging):
+        assert staging.parent == output and staging.name.startswith(".pending-")
+        assert (staging / "offer.docx").is_file()
+        observed.append(staging)
+
+    def failing_open(path, *args, **kwargs):
+        if path.name == "offer.json" and args and args[0] == "x":
+            check_docx(path.parent)
+            raise PermissionError("Simulated JSON open failure")
+        return original_open(path, *args, **kwargs)
+
+    def failing_write(value, stream, **kwargs):
+        check_docx(Path(stream.name).parent)
+        stream.write('{"incomplete":')
+        raise OSError("Simulated JSON write failure")
+
+    def failing_verify(path):
+        check_docx(Path(path).parent)
+        raise ValueError("Simulated verification failure")
+
+    def failing_rename(path, target):
+        if path.name.startswith(".pending-"):
+            check_docx(path)
+            assert (path / "offer.json").is_file()
+            raise PermissionError("Simulated Windows rename failure")
+        return original_rename(path, target)
+
+    if failure == "json_open":
+        monkeypatch.setattr(Path, "open", failing_open)
+    elif failure == "json_write":
+        monkeypatch.setattr(production.json, "dump", failing_write)
+    elif failure == "verify":
+        monkeypatch.setattr(production, "Document", failing_verify)
+    else:
+        monkeypatch.setattr(Path, "rename", failing_rename)
+    code = production.main(["--input", str(source), "--output-dir", str(output)])
+    response = json.loads(capsys.readouterr().out)
+    assert code == 2 and response["ok"] is False
+    assert response["error"] and "document_path" not in response
+    assert observed and all(not path.exists() for path in observed)
+    assert file_snapshot(output) == before
+    assert_complete_runs(output, 1)
+
+
+def test_sequential_publications_preserve_previous_results(payload, tmp_path):
+    source = tmp_path / "input.json"
+    source.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    output = tmp_path / "output"
+    first = invoke(source, output, tmp_path)
+    assert first.returncode == 0, first.stderr
+    before = file_snapshot(output)
+    second = invoke(source, output, tmp_path)
+    assert second.returncode == 0, second.stderr
+    assert json.loads(first.stdout)["document_path"] != json.loads(second.stdout)["document_path"]
+    after = file_snapshot(output)
+    assert all(after[path] == data for path, data in before.items())
+    assert_complete_runs(output, 2)
+
+
+def test_concurrent_skill_processes_publish_distinct_complete_results(payload, tmp_path):
+    source = tmp_path / "input.json"
+    source.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    output = tmp_path / "output"
+    previous = invoke(source, output, tmp_path)
+    assert previous.returncode == 0, previous.stderr
+    before = file_snapshot(output)
+    # Release both subprocess launches together, using separate Python processes.
+    import threading
+
+    barrier = threading.Barrier(2)
+
+    def simultaneous_run():
+        barrier.wait(timeout=30)
+        return invoke(source, output, tmp_path)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(lambda _: simultaneous_run(), range(2)))
+    summaries = []
+    for completed in results:
+        assert completed.returncode == 0, completed.stderr
+        summary = json.loads(completed.stdout)
+        assert summary["successful_calculation"] is True and summary["calculation"]["total"] == "275.00"
+        summaries.append(summary)
+    assert summaries[0]["document_path"] != summaries[1]["document_path"]
+    after = file_snapshot(output)
+    assert all(after[path] == data for path, data in before.items())
+    assert_complete_runs(output, 3)

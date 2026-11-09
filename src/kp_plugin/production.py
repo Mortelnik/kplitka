@@ -10,13 +10,16 @@ import argparse
 import csv
 import hashlib
 import json
+import shutil
 import sys
+import tempfile
 from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
+from docx import Document
 from pydantic import BaseModel, ConfigDict, Field
 
 from kp_plugin.engine.calculation import calculate_offer
@@ -95,38 +98,63 @@ def run_production(request: ProductionInput, output_dir: Path, *, base_dir: Path
         "input_sources": () if errors else request.settings.input_sources,
     })
     output_dir = output_dir.resolve()
-    flow = run_flow(
-        request.raw_text, extractor=NeedsExtractor(StructuredNeedsClient(request.needs)),
-        profile=profile, settings=settings, catalog=catalog, prices=prices, rules=rules,
-        calculate_offer=calculate_offer, output_path=output_dir / "offer.docx",
-        answers=tuple(Answer(a.field_name, a.position, a.value) for a in request.answers),
-        confirmed_sources=settings.input_sources, as_of=request.as_of,
-    )
-    summary_path = flow.document.with_suffix(".json")
-    summary = {
-        "ok": True,
-        "document_path": str(flow.document.resolve()),
-        "summary_path": str(summary_path.resolve()),
-        "document_kind": "internal_diagnostic",
-        "client_offer": False,
-        "gate_status": flow.decision.status.value,
-        "blockers": list(flow.decision.blockers),
-        "warnings": list(flow.decision.warnings),
-        "profile_errors": errors,
-        "selection_statuses": [p.status.value for p in flow.selection.positions],
-        "successful_calculation": flow.calculation.successful_calculation,
-        "trusted_inputs": flow.calculation.trusted_inputs,
-        "complete_delivery_cost": flow.calculation.complete_delivery_cost,
-        "calculation": flow.calculation.raw_output,
-        "calculation_diagnostics": list(flow.calculation.diagnostics),
-        "remaining_questions": [asdict(q) for q in flow.remaining_questions],
-        "p2_implementation": settings.p2_implementation,
-        "extraction_mode": "manual_structured_input",
-    }
-    # The entry point supplies no attestation: the unchanged gate stays closed.
-    with summary_path.open("x", encoding="utf-8") as stream:
-        json.dump(summary, stream, ensure_ascii=False, indent=2, default=_json_default, allow_nan=False)
-    return summary
+    output_dir.mkdir(parents=True, exist_ok=True)
+    # mkdtemp reserves a unique directory atomically. Keep staging on the same
+    # filesystem as the destination; close every file before renaming on Windows.
+    staging = Path(tempfile.mkdtemp(prefix=".pending-", dir=output_dir))
+    unpublished = staging
+    try:
+        published = output_dir / ("run-" + staging.name.removeprefix(".pending-"))
+        flow = run_flow(
+            request.raw_text, extractor=NeedsExtractor(StructuredNeedsClient(request.needs)),
+            profile=profile, settings=settings, catalog=catalog, prices=prices, rules=rules,
+            calculate_offer=calculate_offer, output_path=staging / "offer.docx",
+            answers=tuple(Answer(a.field_name, a.position, a.value) for a in request.answers),
+            confirmed_sources=settings.input_sources, as_of=request.as_of,
+        )
+        summary_path = flow.document.with_suffix(".json")
+        summary = {
+            "ok": True,
+            "document_path": str(published / flow.document.name),
+            "summary_path": str(published / summary_path.name),
+            "document_kind": "internal_diagnostic",
+            "client_offer": False,
+            "gate_status": flow.decision.status.value,
+            "blockers": list(flow.decision.blockers),
+            "warnings": list(flow.decision.warnings),
+            "profile_errors": errors,
+            "selection_statuses": [p.status.value for p in flow.selection.positions],
+            "successful_calculation": flow.calculation.successful_calculation,
+            "trusted_inputs": flow.calculation.trusted_inputs,
+            "complete_delivery_cost": flow.calculation.complete_delivery_cost,
+            "calculation": flow.calculation.raw_output,
+            "calculation_diagnostics": list(flow.calculation.diagnostics),
+            "remaining_questions": [asdict(q) for q in flow.remaining_questions],
+            "p2_implementation": settings.p2_implementation,
+            "extraction_mode": "manual_structured_input",
+        }
+        # No attestation is supplied: successful publication is not gate approval.
+        with summary_path.open("x", encoding="utf-8") as stream:
+            json.dump(summary, stream, ensure_ascii=False, indent=2, default=_json_default, allow_nan=False)
+        try:
+            Document(flow.document)  # Reopen the completed DOCX before publication.
+            expected = json.loads(json.dumps(summary, default=_json_default, allow_nan=False))
+            if json.loads(summary_path.read_text(encoding="utf-8")) != expected:
+                raise ValueError("Written JSON summary failed verification")
+        except Exception as error:
+            # DOCX parsers have multiple exception types; none may publish a pair.
+            raise ValueError(f"Result verification failed: {error}") from error
+        if published.exists():
+            raise FileExistsError(f"Result directory already exists: {published}")
+        staging.rename(published)
+        unpublished = None  # Never clean a staging name after relinquishing it.
+        return summary
+    finally:
+        if unpublished is not None:
+            # Verify the absolute deletion target before recursive cleanup on Windows.
+            if unpublished.resolve().parent != output_dir or not unpublished.name.startswith(".pending-"):
+                raise ValueError("Refusing cleanup outside the current output directory")
+            shutil.rmtree(unpublished)
 
 
 def main(argv: list[str] | None = None) -> int:

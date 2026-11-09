@@ -7,6 +7,7 @@ No commercial attestation or input trust is manufactured by this boundary.
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import sys
@@ -136,8 +137,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         request = ProductionInput.model_validate_json(args.input.read_text(encoding="utf-8-sig"))
         result = run_production(request, args.output_dir, base_dir=args.input.resolve().parent)
-    except (OSError, ValueError, TypeError, ArithmeticError) as error:
-        result = {"ok": False, "error_type": type(error).__name__, "error": str(error)}
+    except (OSError, ValueError, TypeError, ArithmeticError, KeyError, AttributeError, csv.Error) as error:
+        message = (f"Missing required input field: {error.args[0]}"
+                   if isinstance(error, KeyError) else str(error))
+        result = {"ok": False, "error_type": type(error).__name__, "error": message}
         code = 2
     else:
         code = 0

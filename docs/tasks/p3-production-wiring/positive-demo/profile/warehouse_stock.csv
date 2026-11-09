@@ -1,0 +1,2 @@
+actual_date,batch,is_fictional,line_id,product_id,source_ref,status,stock_tons
+2026-11-09,TEST,да,S1,P1,TEST ONLY stock,active,50

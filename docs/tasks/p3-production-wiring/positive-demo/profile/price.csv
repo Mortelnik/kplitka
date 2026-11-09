@@ -1,0 +1,2 @@
+product_id,unit_price_rub_per_t,tax_rate,currency,source_ref
+P1,100,0.1,RUB,TEST ONLY price

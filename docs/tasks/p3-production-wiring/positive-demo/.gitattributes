@@ -1,0 +1,2 @@
+# Preserve the exact existing fixture CSV bytes used by the source fingerprint.
+profile/*.csv -text whitespace=cr-at-eol

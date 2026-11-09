@@ -1,5 +1,15 @@
 # P3: требования к интеграции и решения команды
 
+## Финальная сверка wiring: три замечания исправлены — 9 ноября 2026
+
+Отдельный `docs/tasks/p3-production-wiring/positive-input.json` и его учебные CSV/JSON материализованы из существующей проверенной fixture `payload` в tests/test_production_wiring.py (e21fc82), без новых цен, скидок, остатков и коммерческих свидетельств. Новый тест проверяет совпадение входа и точных байтов файлов с этой fixture. Локальные Git attributes сохраняют CSV без преобразования строк, чтобы воспроизводился хеш учебного источника. Production-код не импортирует tests.
+
+Положительный запуск через production skill фактически исполнил настоящее P2: successful_calculation=true, total="275.00", gate_status=INTERNAL_DRAFT, client_offer=false. Созданы `out/p3-positive-demo/offer.docx` и `offer.json`. Это внутренний диагностический результат; неизвестная доставка и отсутствие коммерческого attestation не скрываются. Исходный fish_demo по-прежнему блокирует расчёт.
+
+На JSON-границе добавлены структурированные отказы для отсутствующих полей CSV и неверных структур правил (ok=false, exit 2). Subprocess-тесты подтверждают успешные уточняющие ответы, отказ неизвестного вопроса и сохранность прежних файлов. Новые проверки только добавлены, прежние тесты не изменены.
+
+Актуальный harness: **523 passed**, lint/package/tests exit **0**; `out/checks/20261109T080545420863Z-4875ddb6/report.json`. Production wiring tests: **15 passed**, без skip. uv по-прежнему недоступен; использован ранее согласованный эквивалент существующим Python из .venv с явным PYTHONPATH текущего worktree. Команда положительного запуска и ограничения — в IMPLEMENTATION_REPORT.md задачи. Wiring технически закрыт; разрешение коммерческой выдачи, реальный LLM, Q1–Q9 и многопозиционный заказ остаются вне этого результата.
+
 ## Production wiring — 9 ноября 2026
 
 Локальный wiring реализован и проверен: `kp_plugin.production` импортирует настоящую `kp_plugin.engine.calculation.calculate_offer`, загружает catalog/price/rules существующими loader-функциями, выполняет обязательную `validate_profile`, загружает каталог/остатки через P4 adapter и вызывает полный `run_flow`. Skill `generate-fish-kp/scripts/run_production.py` делегирует ему JSON-вход/выход. Формулы, P2, профили, adapter, selection и commercial gate не изменены.

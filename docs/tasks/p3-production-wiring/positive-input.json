@@ -1,0 +1,24 @@
+{
+  "profile_dir": "positive-demo/profile",
+  "raw_text": "Учебный товар 2.5 т",
+  "needs": {
+    "items": [
+      {
+        "product_name": "Учебный товар",
+        "quantity": "2.5",
+        "unit": "т"
+      }
+    ]
+  },
+  "as_of": "2026-11-09",
+  "settings": {
+    "input_sources": [
+      {
+        "source_id": "TEST ONLY catalog",
+        "version": "sha256:72e41e1ffe515dbffe157ae06bdd84ce823ae3f4c63478e3fb10867b4459c7ed",
+        "locator": "catalog.csv:line=2",
+        "confirmed": true
+      }
+    ]
+  }
+}

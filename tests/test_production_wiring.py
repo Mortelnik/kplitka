@@ -155,3 +155,102 @@ def test_skill_invalid_json_is_structured_failure(tmp_path, text):
     assert result.returncode == 2
     assert json.loads(result.stdout)["ok"] is False
     assert not (tmp_path / "output").exists()
+
+
+def file_snapshot(folder):
+    return {str(p.relative_to(folder)): p.read_bytes() for p in folder.rglob("*") if p.is_file()}
+
+
+def test_committed_positive_demo_matches_existing_fixture_and_runs(payload, tmp_path):
+    folder = ROOT / "docs/tasks/p3-production-wiring"
+    source = folder / "positive-input.json"
+    example = json.loads(source.read_text(encoding="utf-8"))
+    existing_profile = Path(payload.pop("profile_dir"))
+    committed_profile = folder / example.pop("profile_dir")
+    # Exact data and explicit TEST ONLY source claims from the existing fixture.
+    assert example == payload
+    assert file_snapshot(committed_profile) == file_snapshot(existing_profile)
+    before = file_snapshot(committed_profile)
+    result = invoke(source, tmp_path / "output", tmp_path)
+    assert result.returncode == 0, result.stderr
+    summary = json.loads(result.stdout)
+    assert summary["successful_calculation"] is True
+    assert summary["calculation"]["total"] == "275.00"
+    assert summary["gate_status"] == "INTERNAL_DRAFT" and summary["client_offer"] is False
+    assert summary["trusted_inputs"] is False and summary["complete_delivery_cost"] is False
+    assert summary["blockers"] and not summary["profile_errors"]
+    assert Path(summary["document_path"]).is_file()
+    assert summary == json.loads(Path(summary["summary_path"]).read_text(encoding="utf-8"))
+    assert file_snapshot(committed_profile) == before
+
+
+@pytest.mark.parametrize("filename,contents,error_type", [
+    ("catalog.csv", "name\nУчебный товар\n", "KeyError"),
+    ("price.csv", "unit_price_rub_per_t\n100\n", "KeyError"),
+    ("warehouse_stock.csv", "product_id\nP1\n", "P4DataError"),
+    ("rules.json", "[]", "AttributeError"),
+])
+def test_skill_invalid_profile_returns_json_without_touching_results(payload, tmp_path,
+                                                                    filename, contents, error_type):
+    source = tmp_path / "input.json"
+    source.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    output = tmp_path / "output"
+    valid = invoke(source, output, tmp_path)
+    assert valid.returncode == 0, valid.stderr
+    before = file_snapshot(output)
+    (Path(payload["profile_dir"]) / filename).write_text(contents, encoding="utf-8")
+    failed = invoke(source, output, tmp_path)
+    assert failed.returncode == 2 and not failed.stderr
+    error = json.loads(failed.stdout)
+    assert error["ok"] is False and error["error_type"] == error_type
+    assert error["error"]
+    if error_type == "KeyError":
+        assert "product_id" in error["error"]
+    assert "document_path" not in error
+    assert file_snapshot(output) == before
+
+
+def test_skill_correct_clarification_answers_preserve_gate_and_results(payload, tmp_path):
+    payload["raw_text"] = "Учебный товар"
+    payload["needs"] = {"items": [{"product_name": "Учебный товар"}]}
+    source = tmp_path / "input.json"
+    source.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    output = tmp_path / "output"
+    pending = invoke(source, output, tmp_path)
+    assert pending.returncode == 0, pending.stderr
+    initial = json.loads(pending.stdout)
+    assert initial["gate_status"] == "INTERNAL_DRAFT" and initial["client_offer"] is False
+    assert not initial["successful_calculation"]
+    assert {q["field_name"] for q in initial["remaining_questions"]} == {"quantity", "unit"}
+    before = file_snapshot(output)
+    payload["answers"] = [{"field_name": "quantity", "position": 1, "value": "2.5"},
+                          {"field_name": "unit", "position": 1, "value": "т"}]
+    source.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    completed = invoke(source, output, tmp_path)
+    assert completed.returncode == 0, completed.stderr
+    summary = json.loads(completed.stdout)
+    assert summary["remaining_questions"] == [] and summary["successful_calculation"] is True
+    assert summary["calculation"]["total"] == "275.00"
+    assert summary["gate_status"] == "INTERNAL_DRAFT" and summary["client_offer"] is False
+    assert summary["blockers"] and summary["document_path"] != initial["document_path"]
+    assert summary == json.loads(Path(summary["summary_path"]).read_text(encoding="utf-8"))
+    assert "INTERNAL_DRAFT" in "\n".join(p.text for p in Document(summary["document_path"]).paragraphs)
+    assert all(file_snapshot(output)[path] == data for path, data in before.items())
+
+
+def test_skill_unknown_clarification_question_is_error_and_preserves_results(payload, tmp_path):
+    source = tmp_path / "input.json"
+    source.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    output = tmp_path / "output"
+    valid = invoke(source, output, tmp_path)
+    assert valid.returncode == 0, valid.stderr
+    before = file_snapshot(output)
+    payload["answers"] = [{"field_name": "unknown_question", "position": 1, "value": "2.5"}]
+    source.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    failed = invoke(source, output, tmp_path)
+    assert failed.returncode == 2 and not failed.stderr
+    error = json.loads(failed.stdout)
+    assert error["ok"] is False and error["error_type"] == "ValueError"
+    assert "pending clarification: unknown_question/1" in error["error"]
+    assert "document_path" not in error and "calculation" not in error
+    assert file_snapshot(output) == before

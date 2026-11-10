@@ -1,0 +1,795 @@
+{
+  "meta": {
+    "name": "p3_needs_eval",
+    "target": "P3.1",
+    "description": "Dataset for evaluation of customer needs extraction from free-text requests without real LLM calls. The examples intentionally avoid inventing unverified product facts, prices, discounts, taxes, or delivery terms.",
+    "min_scenarios": 20,
+    "category_order": [
+      "single_item",
+      "multi_item",
+      "incomplete",
+      "budget",
+      "deadline",
+      "address",
+      "constraints",
+      "colloquial",
+      "contradiction",
+      "unknown_product",
+      "missing_quantity",
+      "non_target",
+      "fabricated_condition"
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "P3_NEEDS_01",
+      "category": "single_item",
+      "raw_text": "Нужны 2 т лосося Atlantic до 15 ноября 2026. Доставка в Москву, склад на МКАД. Бюджет до 50 млн. Без предоплаты.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Лосось Atlantic",
+            "quantity": "2",
+            "unit": "т",
+            "desired_deadline": "до 15 ноября 2026",
+            "delivery_address": "Москва, склад на МКАД",
+            "budget_limit": "50000000",
+            "constraints": ["без предварительной оплаты"],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "лосося Atlantic", "char_range": [17, 32], "verified": true},
+              {"field_name": "quantity", "quote": "2", "char_range": [7, 8], "verified": true},
+              {"field_name": "unit", "quote": "т", "char_range": [9, 10], "verified": true},
+              {"field_name": "desired_deadline", "quote": "до 15 ноября 2026", "char_range": [33, 51], "verified": true},
+              {"field_name": "delivery_address", "quote": "Москву, склад на МКАД", "char_range": [53, 74], "verified": true},
+              {"field_name": "budget_limit", "quote": "50 млн", "char_range": [76, 83], "verified": true},
+              {"field_name": "constraints", "quote": "без предоплаты", "char_range": [85, 111], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Москва, склад на МКАД",
+        "desired_deadline": "до 15 ноября 2026",
+        "budget_limit": "50000000",
+        "constraints": ["без предварительной оплаты"],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "delivery_address", "quote": "Москву, склад на МКАД", "char_range": [53, 74], "verified": true},
+          {"field_name": "desired_deadline", "quote": "до 15 ноября 2026", "char_range": [33, 51], "verified": true},
+          {"field_name": "budget_limit", "quote": "50 млн", "char_range": [76, 83], "verified": true},
+          {"field_name": "constraints", "quote": "без предоплаты", "char_range": [85, 111], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется корректное извлечение одного товара, объёма, единицы, бюджета, срока и ограничения без угадывания дополнительных условий."
+    },
+    {
+      "id": "P3_NEEDS_02",
+      "category": "multi_item",
+      "raw_text": "Нужно 1.5 т семги и 3 т трески. Срок до конца месяца. Отгрузка в Санкт-Петербург.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Семга",
+            "quantity": "1.5",
+            "unit": "т",
+            "desired_deadline": null,
+            "delivery_address": null,
+            "budget_limit": null,
+            "constraints": [],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "семги", "char_range": [13, 18], "verified": true},
+              {"field_name": "quantity", "quote": "1.5", "char_range": [7, 10], "verified": true},
+              {"field_name": "unit", "quote": "т", "char_range": [11, 12], "verified": true}
+            ]
+          },
+          {
+            "product_name": "Треска",
+            "quantity": "3",
+            "unit": "т",
+            "desired_deadline": "до конца месяца",
+            "delivery_address": "Санкт-Петербург",
+            "budget_limit": null,
+            "constraints": [],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "трески", "char_range": [22, 28], "verified": true},
+              {"field_name": "quantity", "quote": "3", "char_range": [19, 20], "verified": true},
+              {"field_name": "unit", "quote": "т", "char_range": [21, 22], "verified": true},
+              {"field_name": "desired_deadline", "quote": "до конца месяца", "char_range": [31, 47], "verified": true},
+              {"field_name": "delivery_address", "quote": "Санкт-Петербург", "char_range": [49, 65], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Санкт-Петербург",
+        "desired_deadline": "до конца месяца",
+        "budget_limit": null,
+        "constraints": [],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "desired_deadline", "quote": "до конца месяца", "char_range": [31, 47], "verified": true},
+          {"field_name": "delivery_address", "quote": "Санкт-Петербург", "char_range": [49, 65], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется корректная разметка нескольких товаров в одном запросе и отсутствие смешения полей между позицией и общим запросом."
+    },
+    {
+      "id": "P3_NEEDS_03",
+      "category": "budget",
+      "raw_text": "Нужен кальмар, 10 кг. Бюджет до 120000 рублей. Доставка в Краснодар.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Кальмар",
+            "quantity": "10",
+            "unit": "кг",
+            "desired_deadline": null,
+            "delivery_address": "Краснодар",
+            "budget_limit": "120000",
+            "constraints": [],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "Кальмар", "char_range": [7, 14], "verified": true},
+              {"field_name": "quantity", "quote": "10", "char_range": [16, 18], "verified": true},
+              {"field_name": "unit", "quote": "кг", "char_range": [19, 21], "verified": true},
+              {"field_name": "budget_limit", "quote": "120000 рублей", "char_range": [24, 38], "verified": true},
+              {"field_name": "delivery_address", "quote": "Краснодар", "char_range": [40, 49], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Краснодар",
+        "desired_deadline": null,
+        "budget_limit": "120000",
+        "constraints": [],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "budget_limit", "quote": "120000 рублей", "char_range": [24, 38], "verified": true},
+          {"field_name": "delivery_address", "quote": "Краснодар", "char_range": [40, 49], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что сумма по бюджету извлекается как число в запросе и не подменяется нулём или заглушкой."
+    },
+    {
+      "id": "P3_NEEDS_04",
+      "category": "deadline",
+      "raw_text": "Нужна форель 500 кг до 10.11. Доставка в Новосибирск. Срок горит.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Форель",
+            "quantity": "500",
+            "unit": "кг",
+            "desired_deadline": "до 10.11",
+            "delivery_address": "Новосибирск",
+            "budget_limit": null,
+            "constraints": ["срок горит"],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "форель", "char_range": [9, 15], "verified": true},
+              {"field_name": "quantity", "quote": "500", "char_range": [16, 19], "verified": true},
+              {"field_name": "unit", "quote": "кг", "char_range": [20, 22], "verified": true},
+              {"field_name": "desired_deadline", "quote": "до 10.11", "char_range": [23, 31], "verified": true},
+              {"field_name": "delivery_address", "quote": "Новосибирск", "char_range": [33, 45], "verified": true},
+              {"field_name": "constraints", "quote": "срок горит", "char_range": [47, 58], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Новосибирск",
+        "desired_deadline": "до 10.11",
+        "budget_limit": null,
+        "constraints": ["срок горит"],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "desired_deadline", "quote": "до 10.11", "char_range": [23, 31], "verified": true},
+          {"field_name": "delivery_address", "quote": "Новосибирск", "char_range": [33, 45], "verified": true},
+          {"field_name": "constraints", "quote": "срок горит", "char_range": [47, 58], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что срочность и срок берутся только из текста запроса и не превращаются в произвольную гарантию или цену."
+    },
+    {
+      "id": "P3_NEEDS_05",
+      "category": "address",
+      "raw_text": "Поставьте 3 т креветок в Воронеж, склад у ТРЦ. Нужна срочная отгрузка.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Креветки",
+            "quantity": "3",
+            "unit": "т",
+            "desired_deadline": "срочная отгрузка",
+            "delivery_address": "Воронеж, склад у ТРЦ",
+            "budget_limit": null,
+            "constraints": [],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "креветок", "char_range": [11, 19], "verified": true},
+              {"field_name": "quantity", "quote": "3", "char_range": [20, 21], "verified": true},
+              {"field_name": "unit", "quote": "т", "char_range": [22, 23], "verified": true},
+              {"field_name": "delivery_address", "quote": "Воронеж, склад у ТРЦ", "char_range": [24, 45], "verified": true},
+              {"field_name": "desired_deadline", "quote": "срочная отгрузка", "char_range": [47, 64], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Воронеж, склад у ТРЦ",
+        "desired_deadline": "срочная отгрузка",
+        "budget_limit": null,
+        "constraints": [],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "delivery_address", "quote": "Воронеж, склад у ТРЦ", "char_range": [24, 45], "verified": true},
+          {"field_name": "desired_deadline", "quote": "срочная отгрузка", "char_range": [47, 64], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется фиксация адреса и сроков доставки именно как текста запроса, без допущения скрытого маршрута или склада."
+    },
+    {
+      "id": "P3_NEEDS_06",
+      "category": "constraints",
+      "raw_text": "Нужно 15 кг филе судака. Без заморозки, только сухая транспортировка.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Филе судака",
+            "quantity": "15",
+            "unit": "кг",
+            "desired_deadline": null,
+            "delivery_address": null,
+            "budget_limit": null,
+            "constraints": ["без заморозки", "только сухая транспортировка"],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "филе судака", "char_range": [12, 24], "verified": true},
+              {"field_name": "quantity", "quote": "15", "char_range": [25, 27], "verified": true},
+              {"field_name": "unit", "quote": "кг", "char_range": [28, 30], "verified": true},
+              {"field_name": "constraints", "quote": "без заморозки", "char_range": [32, 46], "verified": true},
+              {"field_name": "constraints", "quote": "только сухая транспортировка", "char_range": [48, 76], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": null,
+        "desired_deadline": null,
+        "budget_limit": null,
+        "constraints": ["без заморозки", "только сухая транспортировка"],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "constraints", "quote": "без заморозки", "char_range": [32, 46], "verified": true},
+          {"field_name": "constraints", "quote": "только сухая транспортировка", "char_range": [48, 76], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется корректный разбор ограничений как списка без навязывания дополнительных бизнес-правил."
+    },
+    {
+      "id": "P3_NEEDS_07",
+      "category": "colloquial",
+      "raw_text": "Хочу по-человечески 600 кг скумбрии, к завтрашнему дню, если можно. Не хочу переплачивать и везите к нам в Ростов.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Скумбрия",
+            "quantity": "600",
+            "unit": "кг",
+            "desired_deadline": "к завтрашнему дню",
+            "delivery_address": "Ростов",
+            "budget_limit": null,
+            "constraints": ["не хочу переплачивать"],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "скумбрии", "char_range": [25, 34], "verified": true},
+              {"field_name": "quantity", "quote": "600", "char_range": [17, 20], "verified": true},
+              {"field_name": "unit", "quote": "кг", "char_range": [21, 23], "verified": true},
+              {"field_name": "desired_deadline", "quote": "к завтрашнему дню", "char_range": [35, 54], "verified": true},
+              {"field_name": "delivery_address", "quote": "Ростов", "char_range": [77, 83], "verified": true},
+              {"field_name": "constraints", "quote": "не хочу переплачивать", "char_range": [55, 76], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Ростов",
+        "desired_deadline": "к завтрашнему дню",
+        "budget_limit": null,
+        "constraints": ["не хочу переплачивать"],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "desired_deadline", "quote": "к завтрашнему дню", "char_range": [35, 54], "verified": true},
+          {"field_name": "delivery_address", "quote": "Ростов", "char_range": [77, 83], "verified": true},
+          {"field_name": "constraints", "quote": "не хочу переплачивать", "char_range": [55, 76], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется чтение разговорной формы запроса без подмены человеческих формулировок на формализованные данные."
+    },
+    {
+      "id": "P3_NEEDS_08",
+      "category": "contradiction",
+      "raw_text": "Нужно 10 кг лосося. Доставка в Казань. Но сначала отгрузка в Пермь, потом в Казань. Подтверждаю только один адрес.",
+      "expected": {
+        "status": "clarify",
+        "items": [
+          {
+            "product_name": "Лосось",
+            "quantity": "10",
+            "unit": "кг",
+            "desired_deadline": null,
+            "delivery_address": null,
+            "budget_limit": null,
+            "constraints": [],
+            "unknown_fields": ["delivery_address"],
+            "evidence": [
+              {"field_name": "product_name", "quote": "лосося", "char_range": [12, 18], "verified": true},
+              {"field_name": "quantity", "quote": "10", "char_range": [19, 21], "verified": true},
+              {"field_name": "unit", "quote": "кг", "char_range": [22, 24], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": null,
+        "desired_deadline": null,
+        "budget_limit": null,
+        "constraints": [],
+        "unknown_fields": ["delivery_address"],
+        "evidence": []
+      },
+      "explanation": "Проверяется, что противоречивый адрес не подменяется случайным значением и должен требовать уточнения вместо угадывания."
+    },
+    {
+      "id": "P3_NEEDS_09",
+      "category": "unknown_product",
+      "raw_text": "Нужны 2 т редкого белого тунца для экспорта. Срочно.",
+      "expected": {
+        "status": "clarify",
+        "items": [
+          {
+            "product_name": null,
+            "quantity": "2",
+            "unit": "т",
+            "desired_deadline": "срочно",
+            "delivery_address": null,
+            "budget_limit": null,
+            "constraints": [],
+            "unknown_fields": ["product_name"],
+            "evidence": [
+              {"field_name": "quantity", "quote": "2", "char_range": [11, 12], "verified": true},
+              {"field_name": "unit", "quote": "т", "char_range": [13, 14], "verified": true},
+              {"field_name": "desired_deadline", "quote": "срочно", "char_range": [40, 46], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": null,
+        "desired_deadline": "срочно",
+        "budget_limit": null,
+        "constraints": [],
+        "unknown_fields": ["product_name"],
+        "evidence": [
+          {"field_name": "desired_deadline", "quote": "срочно", "char_range": [40, 46], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что неизвестный товар не заменяется названием из каталога и должен быть уточнён, а не выдуман."
+    },
+    {
+      "id": "P3_NEEDS_10",
+      "category": "missing_quantity",
+      "raw_text": "Нужен лосось в Москву на следующую неделю.",
+      "expected": {
+        "status": "error",
+        "items": [
+          {
+            "product_name": "Лосось",
+            "quantity": null,
+            "unit": null,
+            "desired_deadline": "на следующую неделю",
+            "delivery_address": "Москва",
+            "budget_limit": null,
+            "constraints": [],
+            "unknown_fields": ["quantity", "unit"],
+            "evidence": [
+              {"field_name": "product_name", "quote": "лосось", "char_range": [8, 14], "verified": true},
+              {"field_name": "delivery_address", "quote": "Москву", "char_range": [15, 21], "verified": true},
+              {"field_name": "desired_deadline", "quote": "на следующую неделю", "char_range": [22, 41], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Москва",
+        "desired_deadline": "на следующую неделю",
+        "budget_limit": null,
+        "constraints": [],
+        "unknown_fields": ["quantity", "unit"],
+        "evidence": [
+          {"field_name": "delivery_address", "quote": "Москву", "char_range": [15, 21], "verified": true},
+          {"field_name": "desired_deadline", "quote": "на следующую неделю", "char_range": [22, 41], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что отсутствие количества не подменяется единицей или умолчанием: запрос должен приводить к уточнению или ошибке."
+    },
+    {
+      "id": "P3_NEEDS_11",
+      "category": "non_target",
+      "raw_text": "Привет! Как дела? Есть ли у вас крабы в ассортименте?",
+      "expected": {
+        "status": "clarify",
+        "items": [],
+        "delivery_address": null,
+        "desired_deadline": null,
+        "budget_limit": null,
+        "constraints": [],
+        "unknown_fields": ["product_name", "quantity"],
+        "evidence": [],
+        "error": "No valid commercial request found; request is conversational and lacks concrete demand."
+      },
+      "explanation": "Проверяется отсутствие подмены нецелевого обращения в коммерческий запрос и требование уточнения."
+    },
+    {
+      "id": "P3_NEEDS_12",
+      "category": "fabricated_condition",
+      "raw_text": "Нужны 5 кг форели. Делаем 20% скидку и оплачиваем только по факту поставки, без документов. Срок — как получится.",
+      "expected": {
+        "status": "clarify",
+        "items": [
+          {
+            "product_name": "Форель",
+            "quantity": "5",
+            "unit": "кг",
+            "desired_deadline": "как получится",
+            "delivery_address": null,
+            "budget_limit": null,
+            "constraints": ["20% скидка", "без документов", "по факту поставки"],
+            "unknown_fields": ["constraints"],
+            "evidence": [
+              {"field_name": "product_name", "quote": "форели", "char_range": [9, 15], "verified": true},
+              {"field_name": "quantity", "quote": "5", "char_range": [16, 17], "verified": true},
+              {"field_name": "unit", "quote": "кг", "char_range": [18, 20], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": null,
+        "desired_deadline": "как получится",
+        "budget_limit": null,
+        "constraints": [],
+        "unknown_fields": ["constraints"],
+        "evidence": [
+          {"field_name": "desired_deadline", "quote": "как получится", "char_range": [85, 98], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что навязанные коммерческие условия без подтверждения из профиля не принимаются как факт и должны быть отвергнуты или запрошены отдельно."
+    },
+    {
+      "id": "P3_NEEDS_13",
+      "category": "multi_item",
+      "raw_text": "Нужны 2 т горбуши и 600 кг трески. Бюджет до 250000. Отгрузка в Челябинск.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Горбуша",
+            "quantity": "2",
+            "unit": "т",
+            "desired_deadline": null,
+            "delivery_address": "Челябинск",
+            "budget_limit": "250000",
+            "constraints": [],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "горбуши", "char_range": [13, 20], "verified": true},
+              {"field_name": "quantity", "quote": "2", "char_range": [7, 8], "verified": true},
+              {"field_name": "unit", "quote": "т", "char_range": [9, 10], "verified": true},
+              {"field_name": "budget_limit", "quote": "250000", "char_range": [46, 52], "verified": true},
+              {"field_name": "delivery_address", "quote": "Челябинск", "char_range": [54, 63], "verified": true}
+            ]
+          },
+          {
+            "product_name": "Треска",
+            "quantity": "600",
+            "unit": "кг",
+            "desired_deadline": null,
+            "delivery_address": "Челябинск",
+            "budget_limit": "250000",
+            "constraints": [],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "трески", "char_range": [24, 30], "verified": true},
+              {"field_name": "quantity", "quote": "600", "char_range": [21, 24], "verified": true},
+              {"field_name": "unit", "quote": "кг", "char_range": [31, 33], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Челябинск",
+        "desired_deadline": null,
+        "budget_limit": "250000",
+        "constraints": [],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "delivery_address", "quote": "Челябинск", "char_range": [54, 63], "verified": true},
+          {"field_name": "budget_limit", "quote": "250000", "char_range": [46, 52], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что общий бюджет и адрес применяются корректно для нескольких позиций и не смешиваются с атрибутами конкретного товара."
+    },
+    {
+      "id": "P3_NEEDS_14",
+      "category": "incomplete",
+      "raw_text": "Нужна скумбрия. Доставка в Нижний Новгород. Позже уточню объём.",
+      "expected": {
+        "status": "error",
+        "items": [
+          {
+            "product_name": "Скумбрия",
+            "quantity": null,
+            "unit": null,
+            "desired_deadline": null,
+            "delivery_address": "Нижний Новгород",
+            "budget_limit": null,
+            "constraints": [],
+            "unknown_fields": ["quantity", "unit"],
+            "evidence": [
+              {"field_name": "product_name", "quote": "скумбрия", "char_range": [8, 16], "verified": true},
+              {"field_name": "delivery_address", "quote": "Нижний Новгород", "char_range": [18, 35], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Нижний Новгород",
+        "desired_deadline": null,
+        "budget_limit": null,
+        "constraints": [],
+        "unknown_fields": ["quantity", "unit"],
+        "evidence": [
+          {"field_name": "delivery_address", "quote": "Нижний Новгород", "char_range": [18, 35], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что продукт без количества и единицы не трактуется как готовый заказ и требует уточнение."
+    },
+    {
+      "id": "P3_NEEDS_15",
+      "category": "constraints",
+      "raw_text": "Нужно 8 кг икры. Только без заморозки и без предварительной оплаты.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Икра",
+            "quantity": "8",
+            "unit": "кг",
+            "desired_deadline": null,
+            "delivery_address": null,
+            "budget_limit": null,
+            "constraints": ["без заморозки", "без предварительной оплаты"],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "икры", "char_range": [10, 14], "verified": true},
+              {"field_name": "quantity", "quote": "8", "char_range": [15, 16], "verified": true},
+              {"field_name": "unit", "quote": "кг", "char_range": [17, 19], "verified": true},
+              {"field_name": "constraints", "quote": "без заморозки", "char_range": [21, 35], "verified": true},
+              {"field_name": "constraints", "quote": "без предварительной оплаты", "char_range": [37, 64], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": null,
+        "desired_deadline": null,
+        "budget_limit": null,
+        "constraints": ["без заморозки", "без предварительной оплаты"],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "constraints", "quote": "без заморозки", "char_range": [21, 35], "verified": true},
+          {"field_name": "constraints", "quote": "без предварительной оплаты", "char_range": [37, 64], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что ограничения в форме обязательных условий извлекаются в отдельный список без превращения в подтверждённый тариф."
+    },
+    {
+      "id": "P3_NEEDS_16",
+      "category": "incomplete",
+      "raw_text": "Нужен 2 кг карп в Самару. Не могу определить точный срок.",
+      "expected": {
+        "status": "clarify",
+        "items": [
+          {
+            "product_name": "Карп",
+            "quantity": "2",
+            "unit": "кг",
+            "desired_deadline": null,
+            "delivery_address": "Самару",
+            "budget_limit": null,
+            "constraints": [],
+            "unknown_fields": ["desired_deadline"],
+            "evidence": [
+              {"field_name": "product_name", "quote": "карп", "char_range": [10, 14], "verified": true},
+              {"field_name": "quantity", "quote": "2", "char_range": [8, 9], "verified": true},
+              {"field_name": "unit", "quote": "кг", "char_range": [10, 12], "verified": true},
+              {"field_name": "delivery_address", "quote": "Самару", "char_range": [15, 21], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Самару",
+        "desired_deadline": null,
+        "budget_limit": null,
+        "constraints": [],
+        "unknown_fields": ["desired_deadline"],
+        "evidence": [
+          {"field_name": "delivery_address", "quote": "Самару", "char_range": [15, 21], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что заявленное отсутствие срока остаётся неясным и не преобразуется в ложное значение."
+    },
+    {
+      "id": "P3_NEEDS_17",
+      "category": "budget",
+      "raw_text": "Хотим 500 кг креветок, не более 300000. Вывоз в Екатеринбург.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Креветки",
+            "quantity": "500",
+            "unit": "кг",
+            "desired_deadline": null,
+            "delivery_address": "Екатеринбург",
+            "budget_limit": "300000",
+            "constraints": [],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "креветок", "char_range": [13, 21], "verified": true},
+              {"field_name": "quantity", "quote": "500", "char_range": [7, 10], "verified": true},
+              {"field_name": "unit", "quote": "кг", "char_range": [11, 13], "verified": true},
+              {"field_name": "budget_limit", "quote": "300000", "char_range": [27, 33], "verified": true},
+              {"field_name": "delivery_address", "quote": "Екатеринбург", "char_range": [42, 54], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Екатеринбург",
+        "desired_deadline": null,
+        "budget_limit": "300000",
+        "constraints": [],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "budget_limit", "quote": "300000", "char_range": [27, 33], "verified": true},
+          {"field_name": "delivery_address", "quote": "Екатеринбург", "char_range": [42, 54], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что выражение 'не более' у бюджета извлекается как ограничение и не заменяется на ложную оценку."
+    },
+    {
+      "id": "P3_NEEDS_18",
+      "category": "unknown_product",
+      "raw_text": "Нужно 4 т синего лосося с берегов Северного моря на месяц вперед.",
+      "expected": {
+        "status": "clarify",
+        "items": [
+          {
+            "product_name": null,
+            "quantity": "4",
+            "unit": "т",
+            "desired_deadline": "на месяц вперед",
+            "delivery_address": null,
+            "budget_limit": null,
+            "constraints": [],
+            "unknown_fields": ["product_name"],
+            "evidence": [
+              {"field_name": "quantity", "quote": "4", "char_range": [8, 9], "verified": true},
+              {"field_name": "unit", "quote": "т", "char_range": [10, 11], "verified": true},
+              {"field_name": "desired_deadline", "quote": "на месяц вперед", "char_range": [43, 58], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": null,
+        "desired_deadline": "на месяц вперед",
+        "budget_limit": null,
+        "constraints": [],
+        "unknown_fields": ["product_name"],
+        "evidence": [
+          {"field_name": "desired_deadline", "quote": "на месяц вперед", "char_range": [43, 58], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что нестандартное название товара не должно автоматически становиться подтверждённым продуктом без проверки по каталогу."
+    },
+    {
+      "id": "P3_NEEDS_19",
+      "category": "colloquial",
+      "raw_text": "Поставьте мне филе окуня 1.2 т и сразу в Ярославль. Не торопитесь с ценой, просто скажите, можем ли отгрузить.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Филе окуня",
+            "quantity": "1.2",
+            "unit": "т",
+            "desired_deadline": null,
+            "delivery_address": "Ярославль",
+            "budget_limit": null,
+            "constraints": ["не торопитесь с ценой"],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "филе окуня", "char_range": [12, 22], "verified": true},
+              {"field_name": "quantity", "quote": "1.2", "char_range": [23, 26], "verified": true},
+              {"field_name": "unit", "quote": "т", "char_range": [27, 28], "verified": true},
+              {"field_name": "delivery_address", "quote": "Ярославль", "char_range": [35, 44], "verified": true},
+              {"field_name": "constraints", "quote": "не торопитесь с ценой", "char_range": [46, 68], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": "Ярославль",
+        "desired_deadline": null,
+        "budget_limit": null,
+        "constraints": ["не торопитесь с ценой"],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "delivery_address", "quote": "Ярославль", "char_range": [35, 44], "verified": true},
+          {"field_name": "constraints", "quote": "не торопитесь с ценой", "char_range": [46, 68], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется, что разговорная фраза о цене не превращается в бюджет или факт цены, а адрес и открытая формулировка остаются допустимыми."
+    },
+    {
+      "id": "P3_NEEDS_20",
+      "category": "non_target",
+      "raw_text": "Спасибо, срочно нужна консультация по упаковке и хранению, не про закупку.",
+      "expected": {
+        "status": "clarify",
+        "items": [],
+        "delivery_address": null,
+        "desired_deadline": null,
+        "budget_limit": null,
+        "constraints": [],
+        "unknown_fields": ["product_name", "quantity"],
+        "evidence": [],
+        "error": "Not a purchase request; no commercial quantity or product specified."
+      },
+      "explanation": "Проверяется, что запрос про консультацию и хранение не подменяется запросом на поставку и не трактуется как коммерческая потребность."
+    },
+    {
+      "id": "P3_NEEDS_21",
+      "category": "multi_item",
+      "raw_text": "Нужны 1 т лосося и 800 кг семги. Срок до 20 ноября. Бюджет до 1 млн.",
+      "expected": {
+        "status": "ok",
+        "items": [
+          {
+            "product_name": "Лосось",
+            "quantity": "1",
+            "unit": "т",
+            "desired_deadline": "до 20 ноября",
+            "delivery_address": null,
+            "budget_limit": "1000000",
+            "constraints": [],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "лосося", "char_range": [12, 18], "verified": true},
+              {"field_name": "quantity", "quote": "1", "char_range": [7, 8], "verified": true},
+              {"field_name": "unit", "quote": "т", "char_range": [9, 10], "verified": true},
+              {"field_name": "desired_deadline", "quote": "до 20 ноября", "char_range": [36, 48], "verified": true},
+              {"field_name": "budget_limit", "quote": "1 млн", "char_range": [52, 57], "verified": true}
+            ]
+          },
+          {
+            "product_name": "Семга",
+            "quantity": "800",
+            "unit": "кг",
+            "desired_deadline": "до 20 ноября",
+            "delivery_address": null,
+            "budget_limit": "1000000",
+            "constraints": [],
+            "unknown_fields": [],
+            "evidence": [
+              {"field_name": "product_name", "quote": "семги", "char_range": [25, 30], "verified": true},
+              {"field_name": "quantity", "quote": "800", "char_range": [20, 23], "verified": true},
+              {"field_name": "unit", "quote": "кг", "char_range": [24, 26], "verified": true},
+              {"field_name": "desired_deadline", "quote": "до 20 ноября", "char_range": [36, 48], "verified": true},
+              {"field_name": "budget_limit", "quote": "1 млн", "char_range": [52, 57], "verified": true}
+            ]
+          }
+        ],
+        "delivery_address": null,
+        "desired_deadline": "до 20 ноября",
+        "budget_limit": "1000000",
+        "constraints": [],
+        "unknown_fields": [],
+        "evidence": [
+          {"field_name": "desired_deadline", "quote": "до 20 ноября", "char_range": [36, 48], "verified": true},
+          {"field_name": "budget_limit", "quote": "1 млн", "char_range": [52, 57], "verified": true}
+        ]
+      },
+      "explanation": "Проверяется одинаковое применение общего срока и бюджета для двух товаров, без ложного переноса данных между позициями."
+    }
+  ]
+}

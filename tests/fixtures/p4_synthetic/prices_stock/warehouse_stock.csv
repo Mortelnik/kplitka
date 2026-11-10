@@ -1,0 +1,4 @@
+line_id,product_id,batch,stock_tons,actual_date,status,is_fictional,source_ref
+TEST-LINE-001,TEST-FISH-001,TEST-BATCH-001,40,2026-10-01,active,да,TEST-ONLY-stock-v1
+TEST-LINE-002,TEST-FISH-002,TEST-BATCH-002,12,2026-10-01,active,да,TEST-ONLY-stock-v1
+TEST-LINE-003,TEST-FISH-003,TEST-BATCH-003,8,2026-10-01,draft,да,TEST-ONLY-stock-v1

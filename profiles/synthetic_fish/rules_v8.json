@@ -1,6 +1,6 @@
 {
-  "version": "v7_team_confirmed",
-  "status": "BUSINESS_RULES_CONFIRMED",
+  "version": "v8_demo_aligned",
+  "status": "DEMO_MODEL_NOT_BUSINESS_APPROVED",
   "synthetic": true,
   "customer_identification": {
     "required_fields": [
@@ -20,82 +20,58 @@
     "conversion_to_active": "OUT_OF_SCOPE: only after successful deal"
   },
   "quantity_validation": {
-    "min_qty": "catalog_v6.csv",
-    "available_qty": "warehouse_v6.csv",
+    "min_qty": "catalog_v8.csv",
+    "available_qty": "warehouse_v8.csv",
     "max_qty": null
   },
   "discounts": {
-    "active": [
-      "LOYALTY",
-      "VOLUME"
-    ],
-    "seasonal_preorder_discount": "REMOVED",
-    "stacking": "sum then cap per product category",
-    "loyalty_tiers": [
-      {
-        "min_years": 0,
-        "pct": 0
-      },
-      {
-        "min_years": 1,
-        "pct": 2
-      },
-      {
-        "min_years": 3,
-        "pct": 3
-      },
-      {
-        "min_years": 5,
-        "pct": 5
-      }
-    ],
-    "volume_tiers": [
-      {
-        "min_tons": 0,
-        "pct": 0
-      },
-      {
-        "min_tons": 5,
-        "pct": 2
-      },
-      {
-        "min_tons": 20,
-        "pct": 3
-      },
-      {
-        "min_tons": 50,
-        "pct": 5
-      },
-      {
-        "min_tons": 100,
-        "pct": 7
-      }
-    ],
-    "volume_basis": "total order tonnes",
-    "caps_pct": {
-      "Обычная рыба": 12,
-      "Лососёвые": 10,
-      "Деликатесы": 8
+  "stacking": "best_single_discount",
+  "selection": "maximum_applicable_percent",
+  "small_wholesale": "no_discount_if_zero_full_containers",
+  "rules": [
+    {
+      "id": "D-01",
+      "type": "loyalty",
+      "percent": 2,
+      "min_years": 1,
+      "scope": "whole_order"
     },
-    "discount_base": "line amount before VAT"
-  },
-  "logistics": {
-    "container_capacity_tons": 20,
-    "container_all_products": true,
-    "fill_threshold_pct": 80,
-    "surcharge_per_underfilled_container_rub": 50000,
-    "container_count": "ceil(total_order_tons/20)",
-    "underfilled_definition": "last partial container with 0 < remainder < 16 tonnes; exact 16 tonnes is 80% and incurs no surcharge",
-    "fee_application": "grand_total = sum(goods prices excl VAT minus category-capped discounts plus goods VAT) + 50000 RUB VAT-inclusive per underfilled container",
-    "fee_VAT": "INCLUDED_IN_50000_RUB; add VAT-inclusive delivery fee after goods VAT; do not charge VAT again",
-    "no_manager_approval_trigger": "underfill creates surcharge, not automatic manager approval"
-  },
+    {
+      "id": "D-02",
+      "type": "volume_containers",
+      "percent": 5,
+      "min_containers": 5,
+      "scope": "whole_order"
+    },
+    {
+      "id": "D-03",
+      "type": "seasonal_line_clearance",
+      "percent": 10,
+      "scope": "line",
+      "conditions": [
+        "spring_summer",
+        "purchase_entire_stock_line"
+      ],
+      "integration_status": "PENDING_P2_IMPLEMENTATION"
+    }
+  ]
+},
+ "logistics": {
+  "container_type": "40ft",
+  "container_capacity_source": "catalog_v8.csv:container_capacity_tons",
+  "container_capacity_range_tons": [22, 27],
+  "container_count": "floor(quantity_tons / container_capacity_tons)",
+  "pickup_tons": "quantity_tons - full_containers * container_capacity_tons",
+  "partial_container_policy": "pickup",
+  "surcharge_per_underfilled_container_rub": 0,
+  "mixed_container_policy": "not_calculated_by_single_item_engine"
+},
   "money": {
     "rounding": "ROUND_HALF_UP",
     "decimal_places": 2,
-    "VAT_rate": "read from prices_v6.csv; assumed VAT excluded in unit price"
+    "VAT_rate": "read from prices_v8.csv; assumed VAT excluded in unit price"
   },
   "open_questions": [
-    "Confirm technical DB interface and how R2 returns newly created prospect ID"
+    "Точные даты начала и окончания сезонной скидки D-03 требуют доп.согласования"
   ]
 }
